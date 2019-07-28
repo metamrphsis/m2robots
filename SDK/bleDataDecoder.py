@@ -19,9 +19,9 @@ def decodeNVsetting(byteArr):
 def decodeBleTelemetry(byteArr):
     SeqID = byteArr[CONST.ByteIndex0Seq_n_Btn] & 0x3
     fRPYdeg=[0,0,0]
-    fAccel_mG=[0,0,0]
-    fGyro_dps=[0,0,0]
-    fMag_mGauss=[0,0,0]
+    fAccelHwUnit=[0,0,0]
+    fGyroHwUnit=[0,0,0]
+    fMagHwUnit=[0,0,0]
     for ii in range(3):
         byte0 = ii*CONST.FC_STATUS_EACH_AXIS_BYTE;
         i16byteArr = bytearray([0x0, 0x0]);
@@ -39,7 +39,7 @@ def decodeBleTelemetry(byteArr):
         i16byteArr[1] = (piece0 + piece1);
         i16value = int.from_bytes(i16byteArr, byteorder='little', signed=True)
         i16value = i16value >> (6-CONST.LSB_DROP_ACC-1);
-        fAccel_mG[ii] = i16value*CONST.ACC_DYNAMIC_FS_RNG*1000/(2**15);
+        fAccelHwUnit[ii] = i16value*CONST.ACC_DYNAMIC_FS_RNG*1000/(2**15);
 
         i16byteArr[0] = ((byteArr[byte0+2]&0x30) << 2);
         piece0 = ((byteArr[byte0+2]&0xC0) >> 6);
@@ -47,13 +47,13 @@ def decodeBleTelemetry(byteArr):
         i16byteArr[1] = (piece0 + piece1);
         i16value= int.from_bytes(i16byteArr, byteorder='little', signed=True)
         i16value = i16value >> (6-CONST.LSB_DROP_GYR-3);
-        fGyro_dps[ii] = i16value*CONST.GYRO_DYNAMIC_FS_RNG/(2**15);
+        fGyroHwUnit[ii] = i16value*CONST.GYRO_DYNAMIC_FS_RNG/(2**15);
 
         i16byteArr[0] = ((byteArr[byte0+3]&0xC0));
         i16byteArr[1] = byteArr[byte0+4];
         i16value = int.from_bytes(i16byteArr, byteorder='little', signed=True)
         i16value = i16value >> (6-CONST.LSB_DROP_MAG);
-        fMag_mGauss[ii] = i16value*1000/CONST.LSBcountPerGauss;
+        fMagHwUnit[ii] = i16value*1000/CONST.LSBcountPerGauss;
         
     GPIOdata = (byteArr[CONST.ByteIndex0Seq_n_Btn] & 0xFC) >> 2
     BtnStatus = []
@@ -66,14 +66,11 @@ def decodeBleTelemetry(byteArr):
     telemetry = {
         "m_BtnStatus":BtnStatus,
         "m_SeqID":SeqID,
-        "m_fAccel_mG":fAccel_mG,
-        "m_fGyro_dps":fGyro_dps,
-        "m_fLuminescence":0,
-        "m_fMag_mGauss":fMag_mGauss,
+        "m_fAccelHwUnit":fAccelHwUnit,
+        "m_fGyroHwUnit":fGyroHwUnit,
+        "m_fMagHwUnit":fMagHwUnit,
         "m_fPhoneRPYdeg":[0.0,0.0,0.0],
-        "m_fProximity":0.0,
         "m_fRPYdeg":fRPYdeg,
-        "m_fStepCnt":0,
         "m_fTemperatureDeg":fTemperatureDeg,
         "m_fVoltage":fVoltage,
         "m_iCompass_pm180deg":iCompass_pm180deg,

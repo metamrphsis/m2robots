@@ -6,7 +6,6 @@
 import M2StemController
 import signal
 import time
-import usrCfg
 bUseCallBack = False #True False, choose to use callback or explicit read request fosetLighteningStepr telemetry data retrieval
 
 def setLighteningStep(DurationS,R0=-1.0,G0=-1.0,B0=-1.0,R1=-1.0,G1=-1.0,B1=-1.0):
@@ -50,7 +49,7 @@ def sanityCheck():
         return True
     return False
     
-controller = M2StemController.BleCtrller(CONST.etDebian,usrCfg.BleMACaddress,None)
+controller = M2StemController.BleCtrller(None)
 controller.connect()
 if sanityCheck():
     print("controller HW setting error")

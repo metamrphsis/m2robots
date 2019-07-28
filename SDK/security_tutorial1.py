@@ -25,11 +25,11 @@ def callbackfunc(telemetry):
     print("User handler: TouchEvent=%d,Compass=%2.1f(Deg),yaw=%2.1f(Deg)"%(TouchEvent,iCompass_pm180deg,IMUyawDeg))
     
 bUseCallBack = True #True False, choose to use callback or explicit read request for telemetry data retrieval
-#controller = M2StemController.BleCtrller(CONST.etAndroid,"",callbackfunc)
+#controller = M2StemController.BleCtrller("",callbackfunc)
 if bUseCallBack:
-    controller = M2StemController.BleCtrller(CONST.etDebian,callbackfunc)
+    controller = M2StemController.BleCtrller(callbackfunc)
 else:
-    controller = M2StemController.BleCtrller(CONST.etDebian,None)
+    controller = M2StemController.BleCtrller(None)
 
 controller.connect() # 建立硬件连接
 controller.saveCurrIMUfRPYdeg() # 保存当前门所在角度，作为比较基准

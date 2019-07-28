@@ -36,11 +36,11 @@ def callbackfunc(telemetry):
     print("currently we are in maneuver %s, completed %d step(s), status: %s"%(maneuver,iiCurrStep,CurrStatus))
     
 bUseCallBack = True #True False, choose to use callback or explicit read request for telemetry data retrieval
-#controller = M2StemController.BleCtrller(CONST.etAndroid,"",callbackfunc)
+#controller = M2StemController.BleCtrller("",callbackfunc)
 if bUseCallBack:
-    controller = M2StemController.BleCtrller(CONST.etDebian,usrCfg.BleMACaddress,callbackfunc)
+    controller = M2StemController.BleCtrller(usrCfg.BleMACaddress,callbackfunc)
 else:
-    controller = M2StemController.BleCtrller(CONST.etDebian,usrCfg.BleMACaddress,None)
+    controller = M2StemController.BleCtrller(usrCfg.BleMACaddress,None)
 
 controller.connect()
 

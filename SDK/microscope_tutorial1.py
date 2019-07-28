@@ -50,8 +50,8 @@ def move2nextSMstate():
 if usrCfg.ctrlType != CONST.etAndroid and usrCfg.ctrlType != CONST.etInternet:
     print("microscope needs phone camera to take sample images for further computer vision processing")
     sys.exit()
-controller = M2StemController.BleCtrller(usrCfg.ctrlType,"",callbackfunc)
-#controller = M2StemController.BleCtrller(usrCfg.ctrlType,usrCfg.BleMACaddress,callbackfunc)
+controller = M2StemController.BleCtrller("",callbackfunc)
+#controller = M2StemController.BleCtrller(usrCfg.BleMACaddress,callbackfunc)
     
 controller.connect()
 if sanityCheck():

@@ -100,7 +100,7 @@ def sanityCheck():
         return True
     return False
     
-controller = M2StemController.BleCtrller(usrCfg.ctrlType,callbackfunc)
+controller = M2StemController.BleCtrller(callbackfunc)
     
 controller.connect()
 if sanityCheck():

@@ -26,10 +26,10 @@ def callbackfunc(telemetry):
     print("User handler: TouchEvent=%d,Compass=%2.1f(Deg),yaw=%2.1f(Deg)"%(TouchEvent,iCompass_pm180deg,IMUyawDeg))
     
 ######################################
-controller = M2StemController.BleCtrller(usrCfg.ctrlType,"",callbackfunc)
-#controller = M2StemController.BleCtrller(usrCfg.ctrlType,usrCfg.BleMACaddress,callbackfunc)
-#controller = M2StemController.BleCtrller(usrCfg.ctrlType,usrCfg.BleMACaddress)
-#controller = M2StemController.BleCtrller(usrCfg.ctrlType,"")
+controller = M2StemController.BleCtrller("",callbackfunc)
+#controller = M2StemController.BleCtrller(usrCfg.BleMACaddress,callbackfunc)
+#controller = M2StemController.BleCtrller(usrCfg.BleMACaddress)
+#controller = M2StemController.BleCtrller("")
 ######################################
 
 controller.connect()

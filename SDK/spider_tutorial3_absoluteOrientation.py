@@ -131,11 +131,11 @@ def sanityCheck():
     return False
     
 bUseCallBack = True #True False, choose to exituse callback or explicit read request for telemetry data retrieval
-#controller = M2StemController.BleCtrller(CONST.etAndroid,"",callbackfunc)
+#controller = M2StemController.BleCtrller("",callbackfunc)
 if bUseCallBack:
-    controller = M2StemController.BleCtrller(CONST.etDebian,usrCfg.BleMACaddress,callbackfunc)
+    controller = M2StemController.BleCtrller(usrCfg.BleMACaddress,callbackfunc)
 else:
-    controller = M2StemController.BleCtrller(CONST.etDebian,usrCfg.BleMACaddress,None)
+    controller = M2StemController.BleCtrller(usrCfg.BleMACaddress,None)
 controller.connect()
 if sanityCheck():
     print("controller HW setting error")

@@ -12,7 +12,6 @@ import bleDataDecoder
 import ctypes
 from app2pyListeningServer import app2pyListeningServer
 import socket
-import sys
 import json
 #from collections import deque
 #try:
@@ -46,12 +45,9 @@ def normalizeAngleTo_pm180deg(angleDeg):
     return angleDeg
 
 class BleCtrller:
-    def __init__(self, platform, callback=None):
+    def __init__(self, callback=None):
         self.errorStatus = False
-        if platform not in CONST.platformTypes:
-            self.errorStatus = True
-            return
-        self.m_platform = platform
+        self.m_platform = usrCfg.ctrlType
         self.m_CommsTunnel = "" # etAndroid: socket; etDebian: Bluepy; etInternet: mqtt
         self.m_app2pyListeningServer = None
         self.hService = ""
@@ -167,7 +163,7 @@ class BleCtrller:
             
     def requestInternetTelemetry(self):
         if self.m_platform == CONST.etInternet:
-            self.SendInternetCmdTrans(CONST.TOPIC_APP_INTERNET_MQTT_MetaCtrl,CONST.strREQUEST_Telemetry)
+            self.__SendInternetCmdTrans(CONST.TOPIC_APP_INTERNET_MQTT_MetaCtrl,CONST.strREQUEST_Telemetry)
             
     def getInternetTelemetry(self):
         if self.m_mqttQueue.empty():
@@ -192,7 +188,7 @@ class BleCtrller:
         self.cmd_i8StepperMovCnt = bytearray(CONST.StepMotorCnt)
         self.cmd_u8SeqID = 0
     
-    def getPy2appDictionaryData(self):
+    def __getPy2appDictionaryData(self):
         dictionarydata = None
         if not self.chkSafeStatus():
             if self.cmd_MP3PLAY is None:
@@ -240,7 +236,7 @@ class BleCtrller:
         return dictionarydata
     
     # return False if command is successfully sent out           
-    def SendCmdTransBlking(self, bIgnoreIdenticalCmd=True, bBlk=True):
+    def __SendCmdTransBlking(self, bIgnoreIdenticalCmd=True, bBlk=True):
         if self.chkSafeStatus():
             return True
         if self.requestExit:
@@ -253,7 +249,7 @@ class BleCtrller:
                     else:
                         time.sleep(0.01) #10ms
                 if bIgnoreIdenticalCmd:
-                    if self.isNewBleCmd(self.getBleCmdContent()):
+                    if self.__isNewBleCmd(self.__getBleCmdContent()):
                         self.__sendCmdUnconditional()
                         return False
                     else:
@@ -268,7 +264,7 @@ class BleCtrller:
                     return True
                 else:
                     if bIgnoreIdenticalCmd:
-                        if self.isNewBleCmd(self.getBleCmdContent()):
+                        if self.__isNewBleCmd(self.__getBleCmdContent()):
                             self.__sendCmdUnconditional()
                             return False
                         else:
@@ -281,18 +277,18 @@ class BleCtrller:
     def __sendCmdUnconditional(self):
         self.LastCmdSentTimeMs = getMs()
         if self.m_platform == CONST.etAndroid or self.m_platform == CONST.etLocalNet:
-            self.socketSendStr(self.getPy2appJson())
+            self.__socketSendStr(self.__getPy2appJson())
         elif self.m_platform == CONST.etDebian:
             # direct control BLE, in PC ubuntu or RPi
-            self.SendBleCmdTrans(self.getBleCmdContent())
+            self.__SendBleCmdTrans(self.__getBleCmdContent())
         elif self.m_platform == CONST.etInternet:
-            self.SendInternetCmdTrans(CONST.TOPIC_APP_INTERNET_MQTT_CTRL+usrCfg.mqttusername,self.getPy2appJson())
+            self.__SendInternetCmdTrans(CONST.TOPIC_APP_INTERNET_MQTT_CTRL+usrCfg.mqttusername,self.__getPy2appJson())
         self.cmd_MP3PLAY = None # avoid start MP3 play twice, press & release key 
     
-    def getPy2appJson(self):
-        return json.dumps(self.getPy2appDictionaryData())
+    def __getPy2appJson(self):
+        return json.dumps(self.__getPy2appDictionaryData())
         
-    def socketSendStr(self,strSent):
+    def __socketSendStr(self,strSent):
         # create a socket
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         # connect to server
@@ -312,7 +308,7 @@ class BleCtrller:
         else:
             print("unsupported Socket Transmission")
                 
-    def getBleCmdContent(self):
+    def __getBleCmdContent(self):
         cmdBytes = bytearray(CONST.CHAR3_BYTE_LEN)
         cmdBytes[0] = 0;
         cmdBytes[1] = 0xFF;
@@ -329,20 +325,20 @@ class BleCtrller:
         cmdBytes[13] = self.cmd_u8GPIO;
         return cmdBytes
     
-    def isNewBleCmd(self,bytearrayData):
+    def __isNewBleCmd(self,bytearrayData):
         if bytearrayData == self.baLastBLEbinaryPkt:
             return False
         else:
             return True
         
-    def SendBleCmdTrans(self,bytearrayData):
+    def __SendBleCmdTrans(self,bytearrayData):
         if self.chkSafeStatus():
             return
         self.baLastBLEbinaryPkt = bytearrayData
         self.char3.write(bytearrayData)
         # print("BLE cmd %d bytes sent: %s"%(len(bytearrayData),bytearrayData))
     
-    def SendInternetCmdTrans(self,strTOPIC,bytearrayData):
+    def __SendInternetCmdTrans(self,strTOPIC,bytearrayData):
         if self.chkSafeStatus():
             return
         self.baLastBLEbinaryPkt = bytearrayData
@@ -487,7 +483,7 @@ class BleCtrller:
             self.cmd_i8AarrServos[n] = 0
             self.Servo_beingUsed |= (1<<n)
             
-    def handleTelemetryDataPkg(self):
+    def __handleTelemetryDataPkg(self):
         if self.callback is None:
             defaultTelemDataProcess(self.m_DictTelemetry)
         else:
@@ -516,14 +512,8 @@ class BleCtrller:
         else:
             print("unhandled platform definition")
             return None
-        self.handleTelemetryDataPkg()
+        self.__handleTelemetryDataPkg()
         return self.m_DictTelemetry
-        
-    def check4Notifications(self,timeoutSec = 1.0):
-        if self.chkSafeStatus():
-            return
-        if self.m_CommsTunnel.waitForNotifications(timeoutSec):
-            pass # handleNotification() has been called
   
     def setTime0(self):
         self.m_startTimeS = time.time()
@@ -542,9 +532,9 @@ if usrCfg.ctrlType == CONST.etDebian:
     
         def handleNotification(self, cHandle, notif_byteArr):
             self.m_DictTelemetry = bleDataDecoder.decodeBleTelemetry(notif_byteArr)
-            self.handleTelemetryDataPkg()
+            self.__handleTelemetryDataPkg()
     
-        def handleTelemetryDataPkg(self):
+        def __handleTelemetryDataPkg(self):
             if self.callback is None:
                 defaultTelemDataProcess(self.m_DictTelemetry)
             else:

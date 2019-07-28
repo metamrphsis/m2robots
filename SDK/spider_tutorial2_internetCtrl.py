@@ -23,7 +23,7 @@ def signal_handler(sig, frame):
     
 signal.signal(signal.SIGINT, signal_handler)
 
-controller = M2StemController.BleCtrller(usrCfg.ctrlType,None)
+controller = M2StemController.BleCtrller(None)
 controller.connect()
        
 def stopEverything():
