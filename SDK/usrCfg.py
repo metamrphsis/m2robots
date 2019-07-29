@@ -3,8 +3,8 @@
 
 # ubuntu <==bluepy==> Ble HW 
 import CONST
-#ctrlType = CONST.etDebian
-ctrlType = CONST.etInternet
+ctrlType = CONST.etDebian
+#ctrlType = CONST.etInternet
 #ctrlType = CONST.etLocalNet
 #ctrlType = CONST.etAndroid
 
@@ -17,7 +17,7 @@ if ctrlType == CONST.etInternet:
     mqttpassword = ""
 elif ctrlType == CONST.etDebian:
     # ubuntu <==bluepy==> Ble HW 
-    BleMACaddress= "80:6F:B0:2C:E3:D3"
+    BleMACaddress= "80:6F:B0:A7:F7:CA"
     hostIPaddr = None
     mqttPort = None
     mqttusername = None

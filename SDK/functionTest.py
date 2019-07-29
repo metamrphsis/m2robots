@@ -26,7 +26,7 @@ def callbackfunc(telemetry):
     print("User handler: TouchEvent=%d,Compass=%2.1f(Deg),yaw=%2.1f(Deg)"%(TouchEvent,iCompass_pm180deg,IMUyawDeg))
     
 ######################################
-controller = M2StemController.BleCtrller("",callbackfunc)
+controller = M2StemController.BleCtrller(callbackfunc)
 #controller = M2StemController.BleCtrller(usrCfg.BleMACaddress,callbackfunc)
 #controller = M2StemController.BleCtrller(usrCfg.BleMACaddress)
 #controller = M2StemController.BleCtrller("")
@@ -34,11 +34,9 @@ controller = M2StemController.BleCtrller("",callbackfunc)
 
 controller.connect()
 while True:
-    controller.set_wallpaper(ConstSharedAppSdk.emoPic_smile)
+    controller.set_wallpaper(ConstSharedAppSdk.emoPic_happy)
     controller.SendCmdTransBlking()
     time.sleep(1)
-    print("done")
-    break
     
     controller.clearPreviousCmd()
     #controller.send_a_SMS("14086665581", "helloworld")

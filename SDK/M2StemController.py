@@ -236,7 +236,7 @@ class BleCtrller:
         return dictionarydata
     
     # return False if command is successfully sent out           
-    def __SendCmdTransBlking(self, bIgnoreIdenticalCmd=True, bBlk=True):
+    def SendCmdTransBlking(self, bIgnoreIdenticalCmd=True, bBlk=True):
         if self.chkSafeStatus():
             return True
         if self.requestExit:
