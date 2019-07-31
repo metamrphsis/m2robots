@@ -32,7 +32,6 @@ controller = M2StemController.BleCtrller(callbackfunc)
 #controller = M2StemController.BleCtrller("")
 ######################################
 
-controller.connect()
 while True:
     controller.set_wallpaper(ConstSharedAppSdk.emoPic_happy)
     controller.SendCmdTransBlking()

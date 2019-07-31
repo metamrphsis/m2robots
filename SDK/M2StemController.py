@@ -46,6 +46,7 @@ def normalizeAngleTo_pm180deg(angleDeg):
 
 class BleCtrller:
     def __init__(self, callback=None):
+        self.m_bCommsLinkConnected = False 
         self.errorStatus = False
         self.m_platform = usrCfg.ctrlType
         self.m_CommsTunnel = "" # etAndroid: socket; etDebian: Bluepy; etInternet: mqtt
@@ -128,6 +129,9 @@ class BleCtrller:
     
     def getMaxAbsErrFromSavedIMUfRPYdeg(self):
         return max(self.getAbsErrFromSavedIMUfRPYdeg())
+    
+    def disconnectBLE(self):
+        self.m_CommsTunnel.disconnect()
         
     def stop(self):
         self.requestExit = True
@@ -142,16 +146,20 @@ class BleCtrller:
                 self.m_app2pyListeningServer = app2pyListeningServer(self.callback)
                 self.m_app2pyListeningServer.runAsThread()
         elif self.m_platform == CONST.etDebian:
-            self.m_CommsTunnel = btle.Peripheral(usrCfg.BleMACaddress)
-            self.m_CommsTunnel.setDelegate( DelegateIfc(self.callback))
-            self.hService = self.m_CommsTunnel.getServiceByUUID(btle.UUID("0000fff0-0000-1000-8000-00805f9b34fb"))
-            #for ch in self.hService.getCharacteristics():
-            #    print(str(ch))
-            self.char1 = self.hService.getCharacteristics(btle.UUID("0000fff1-0000-1000-8000-00805f9b34fb"))[0]
-            self.char3 = self.hService.getCharacteristics(btle.UUID("0000fff3-0000-1000-8000-00805f9b34fb"))[0]
-            self.char4 = self.hService.getCharacteristics(btle.UUID("0000fff4-0000-1000-8000-00805f9b34fb"))[0]
-            if self.callback is not None:
-                self.m_CommsTunnel.writeCharacteristic(self.char4.valHandle+1, bytes([0x1,0x0]))
+            try:
+                self.m_CommsTunnel = btle.Peripheral(usrCfg.BleMACaddress)
+                self.m_CommsTunnel.setDelegate( DelegateIfc(self.callback))
+                self.hService = self.m_CommsTunnel.getServiceByUUID(btle.UUID("0000fff0-0000-1000-8000-00805f9b34fb"))
+                self.char1 = self.hService.getCharacteristics(btle.UUID("0000fff1-0000-1000-8000-00805f9b34fb"))[0]
+                self.char3 = self.hService.getCharacteristics(btle.UUID("0000fff3-0000-1000-8000-00805f9b34fb"))[0]
+                self.char4 = self.hService.getCharacteristics(btle.UUID("0000fff4-0000-1000-8000-00805f9b34fb"))[0]
+                if self.callback is not None:
+                    self.m_CommsTunnel.writeCharacteristic(self.char4.valHandle+1, bytes([0x1,0x0]))
+                self.m_bCommsLinkConnected = True
+            except:
+                print("exception occurs in connect()")
+                self.m_bCommsLinkConnected = False
+                
         elif self.m_platform == CONST.etInternet:
             self.m_mqttQueue = Queue()
             self.m_CommsTunnel = mqttutils.MQTTClientProxy(self.m_mqttQueue,usrCfg.hostIPaddr,usrCfg.mqttPort)
@@ -242,6 +250,13 @@ class BleCtrller:
         if self.requestExit:
             return True
         else:
+            if not self.m_bCommsLinkConnected:
+                print("not connected, attempt to connect")
+                self.connect()
+            
+            if not self.m_bCommsLinkConnected:
+                return True
+            
             if bBlk:
                 while True:
                     if getMs()-self.LastCmdSentTimeMs > CONST.MinMsIntervalForInternetCtrl:
@@ -335,7 +350,12 @@ class BleCtrller:
         if self.chkSafeStatus():
             return
         self.baLastBLEbinaryPkt = bytearrayData
-        self.char3.write(bytearrayData)
+        try:
+            self.char3.write(bytearrayData)
+        except:
+            time.sleep(2)
+            self.disconnectBLE()
+            self.m_bCommsLinkConnected = False
         # print("BLE cmd %d bytes sent: %s"%(len(bytearrayData),bytearrayData))
     
     def __SendInternetCmdTrans(self,strTOPIC,bytearrayData):
