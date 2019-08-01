@@ -1,1 +1,3 @@
 *.pyc
+pySDK/usrCfg.py
+javaSDK/usrCfg.java
