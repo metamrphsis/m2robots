@@ -4,25 +4,25 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 public class M2StemController {
-	static private byte m_byteFlightMode = CONST.fightModeSetting.DirectCmdMode.get_byteEnumVal();
-	static private byte[] m_PWMctrlValsPendingTx = new byte[CONST.RcPWMchanNum];
-	static private byte m_u8GPIO_val_fromUI = 0;
+	private byte m_byteFlightMode = CONST.fightModeSetting.DirectCmdMode.get_byteEnumVal();
+	private byte[] m_PWMctrlValsPendingTx = new byte[CONST.RcPWMchanNum];
+	private byte m_u8GPIO_val_fromUI = 0;
 	
-    static private byte m_getBinaryTxCtrlCmdCnt = 0;
-    static private boolean m_bRunning = true;
-    static private BluetoothDevice sensor;
-    static private BluetoothGattCharacteristic char3, char4;
+    private byte m_getBinaryTxCtrlCmdCnt = 0;
+    private boolean m_bRunning = true;
+    private BluetoothDevice sensor;
+    private BluetoothGattCharacteristic char3, char4;
     
-    static void setRunning(boolean running) {
+    void setRunning(boolean running) {
     	m_bRunning = running;
     }
     
-    static void setCtrl(byte[] PWMctrlValsPendingTx, byte u8GPIO_val_fromUI) {
+    void setCtrl(byte[] PWMctrlValsPendingTx, byte u8GPIO_val_fromUI) {
     	m_PWMctrlValsPendingTx = PWMctrlValsPendingTx;
     	m_u8GPIO_val_fromUI = u8GPIO_val_fromUI;
     }
 
-    static boolean connect( String MACaddress ) {
+    boolean connect( String MACaddress ) {
         /*
          * To start looking of the device, we first must initialize the TinyB library. The way of interacting with the
          * library is through the BluetoothManager. There can be only one BluetoothManager at one time, and the
@@ -59,7 +59,7 @@ public class M2StemController {
         }
 
         System.out.print("Found device: ");
-        M2StemController.printDevice(sensor);
+        printDevice(sensor);
 
         try {
             if (sensor.connect())
@@ -103,20 +103,20 @@ public class M2StemController {
         return false;
     }
     
-    static void disconnect() {
+    void disconnect() {
     	sensor.disconnect();
     }
     
-    static void writeCmd(byte[] ctrlCmd) {
+    void writeCmd(byte[] ctrlCmd) {
     	char3.writeValue(ctrlCmd);
     }
     
-    static byte[] readTelem() {
+    byte[] readTelem() {
     	byte[] m_byteArrTelemetry = char4.readValue();
     	return m_byteArrTelemetry;
     }
     
-    static void printDevice(BluetoothDevice device) {
+    void printDevice(BluetoothDevice device) {
         System.out.print("Address = " + device.getAddress());
         System.out.print(" Name = " + device.getName());
         System.out.print(" Connected = " + device.getConnected());
@@ -128,7 +128,7 @@ public class M2StemController {
      * getDevices method. We can the look through the list of devices to find the device with the MAC which we provided
      * as a parameter. We continue looking until we find it, or we try 15 times (1 minutes).
      */
-    static BluetoothDevice getDevice(String address) throws InterruptedException {
+    BluetoothDevice getDevice(String address) throws InterruptedException {
         BluetoothManager manager = BluetoothManager.getBluetoothManager();
         BluetoothDevice sensor = null;
         for (int i = 0; (i < 15) && m_bRunning; ++i) {
@@ -159,7 +159,7 @@ public class M2StemController {
      * http://processors.wiki.ti.com/images/a/a8/BLE_SensorTag_GATT_Server.pdf. The service we are looking for has the
      * short UUID AA00 which we insert into the TI Base UUID: f000XXXX-0451-4000-b000-000000000000
      */
-    static BluetoothGattService getService(BluetoothDevice device, String UUID) throws InterruptedException {
+    BluetoothGattService getService(BluetoothDevice device, String UUID) throws InterruptedException {
         System.out.println("Services exposed by device:");
         BluetoothGattService m2ctrllerService = null;
         List<BluetoothGattService> bluetoothServices = null;
@@ -190,7 +190,7 @@ public class M2StemController {
         return null;
     }
     
-    static byte[] getBinaryTxCtrlCmd()
+    byte[] getBinaryTxCtrlCmd()
     {
         m_getBinaryTxCtrlCmdCnt ++;
         // byte: -128 to 127
@@ -217,12 +217,12 @@ public class M2StemController {
         return TxCtrlCmd;
     }
 
-    static void decodeTelemetry(byte [] m_byteArrTelemetry) {
-        float fRPYdeg[] = new float[3];
-        float fAccelHwUnit[] = new float[3]; // HW unit
-        float fGyroHwUnit[] = new float[3];    // HW unit
-        float fMagHwUnit[] = new float[3];
-        int i16AccGyrMag[] = new int[9];
+    dictionarydata decodeTelemetry(byte [] m_byteArrTelemetry) {
+    	dictionarydata telem = new dictionarydata();
+    	telem.fRPYdeg = new float[3];
+    	telem.fAccelHwUnit = new float[3]; // HW unit
+    	telem.fGyroHwUnit = new float[3];    // HW unit
+    	telem.fMagHwUnit = new float[3];
         int byte0;
         for (int ii = 0; ii < 3; ii++) {
             byte piece0;
@@ -238,7 +238,7 @@ public class M2StemController {
             i16byteArr[1] = (byte) (piece0 + piece1);
             int i16value = ByteBuffer.wrap(Arrays.copyOfRange(i16byteArr, 0, 2)).order(ByteOrder.LITTLE_ENDIAN).getShort();
             i16value = i16value >> 6;
-            fRPYdeg[ii] = ((float) i16value / CONST.RPY_floatIntConversion);
+            telem.fRPYdeg[ii] = ((float) i16value / CONST.RPY_floatIntConversion);
 
             i16byteArr[0] = (byte) (((int) m_byteArrTelemetry[byte0 + 1] & 0x0C) << 4);
             piece0 = (byte) ((m_byteArrTelemetry[byte0 + 1] & 0xF0) >>> 4);
@@ -247,8 +247,7 @@ public class M2StemController {
             int i16_acc;
             i16_acc = (ByteBuffer.wrap(Arrays.copyOfRange(i16byteArr, 0, 2)).order(ByteOrder.LITTLE_ENDIAN).getShort());
             i16_acc = i16_acc >> (6 - CONST.LSB_DROP_ACC - 1);
-            i16AccGyrMag[0+ii] = i16_acc;
-            fAccelHwUnit[ii] = (float) i16_acc * CONST.ACC_DYNAMIC_FS_RNG * 1000 / (float) Math.pow(2, 15);
+            telem.fAccelHwUnit[ii] = (float) i16_acc * CONST.ACC_DYNAMIC_FS_RNG * 1000 / (float) Math.pow(2, 15);
 
             i16byteArr[0] = (byte) (((int) m_byteArrTelemetry[byte0 + 2] & 0x30) << 2);
             piece0 = (byte) ((m_byteArrTelemetry[byte0 + 2] & 0xC0) >>> 6);
@@ -257,8 +256,7 @@ public class M2StemController {
             int i16_gyro;
             i16_gyro = (ByteBuffer.wrap(Arrays.copyOfRange(i16byteArr, 0, 2)).order(ByteOrder.LITTLE_ENDIAN).getShort());
             i16_gyro = i16_gyro >> (6 - CONST.LSB_DROP_GYR - 3);
-            i16AccGyrMag[3+ii] = i16_gyro;
-            fGyroHwUnit[ii] = (float) i16_gyro * CONST.GYRO_DYNAMIC_FS_RNG / (float) Math.pow(2, 15);
+            telem.fGyroHwUnit[ii] = (float) i16_gyro * CONST.GYRO_DYNAMIC_FS_RNG / (float) Math.pow(2, 15);
 
             i16byteArr[0] = (byte) (((int) m_byteArrTelemetry[byte0 + 3] & 0xC0));
             i16byteArr[1] = m_byteArrTelemetry[byte0 + 4];
@@ -267,22 +265,15 @@ public class M2StemController {
             i16_mag = (ByteBuffer.wrap(Arrays.copyOfRange(i16byteArr, 0, 2)).order(ByteOrder.LITTLE_ENDIAN).getShort());
             // rebuild the actual i16 data transmitted
             i16_mag = i16_mag >> (6-CONST.LSB_DROP_MAG);
-            i16AccGyrMag[6+ii] = i16_mag;
-            fMagHwUnit[ii] = (float) i16_mag * 1000 / CONST.LSBcountPerGauss;
+        telem.fMagHwUnit[ii] = (float) i16_mag * 1000 / CONST.LSBcountPerGauss;
         }
-        int iCompassDeg = m_byteArrTelemetry[CONST.ByteIndex0Compass] * 2;
+        telem.iCompassDeg = m_byteArrTelemetry[CONST.ByteIndex0Compass] * 2;
         // 16bit 6050 temperature reading
         //int i16Temperature = ByteBuffer.wrap(Arrays.copyOfRange(m_byteArrTelemetry, CONST.ByteIndex0Tmpture, CONST.ByteIndex0Tmpture + 2)).order(ByteOrder.LITTLE_ENDIAN).getShort();
         //float fTemperatureDeg = (float) i16Temperature / 340 + 36.53f;
         // 8-bit 6050 temperature reading
         byte i8Temperature = m_byteArrTelemetry[CONST.ByteIndex0Tmpture];
-        float fTemperatureDeg = (float) i8Temperature / (340.0f/256.0f) + 36.53f;
-        System.out.print("===========================================================================\n");
-        System.out.print(String.format("fRPYdeg:%f,%f,%f\n", fRPYdeg[0],fRPYdeg[1],fRPYdeg[2]));
-        System.out.print(String.format("fAccelHwUnit:%f,%f,%f\n", fAccelHwUnit[0],fAccelHwUnit[1],fAccelHwUnit[2]));
-        System.out.print(String.format("fGyroHwUnit:%f,%f,%f\n", fGyroHwUnit[0],fGyroHwUnit[1],fGyroHwUnit[2]));
-        System.out.print(String.format("fMagHwUnit:%f,%f,%f\n", fMagHwUnit[0],fMagHwUnit[1],fMagHwUnit[2]));
-        System.out.print(String.format("iCompassDeg:%d\n", iCompassDeg));
-        System.out.print(String.format("fTemperatureDeg:%2.1f\n", fTemperatureDeg));
+        telem.fTemperatureDeg = (float) i8Temperature / (340.0f/256.0f) + 36.53f;
+        return telem;
     }
 }

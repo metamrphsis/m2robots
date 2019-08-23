@@ -1,10 +1,4 @@
-import java.util.concurrent.locks.*;
-import java.util.concurrent.TimeUnit;
-
 public class roboticArm {
-	static private boolean running = true;
-	static private Lock lock;
-	static private Condition cv;
 	static final int ServoBase = 0; // positive ctrl input: topview, CCW
 	static final int ServoShoulder = 1; // positive ctrl input: rightview, CCW
 	static final int ServoElbow = 2; // positive ctrl input: rightview, CW
@@ -13,26 +7,11 @@ public class roboticArm {
 
     public static void main(String[] args) throws InterruptedException {
 
-        if (args.length > 0) {
-            System.err.println("device MAC address defined in usrCfg.java");
-            System.exit(-1);
-        }
-        
-        lock = new ReentrantLock();
-        cv = lock.newCondition();
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            public void run() {
-                running = false;
-                lock.lock();
-                try {
-                    cv.signalAll();
-                } finally {
-                    lock.unlock();
-                }
-            }
-        });
-        
-        M2StemController.connect(usrCfg.BleMACaddress);
+    	utilities util = new utilities(); 
+		util.initilize();        
+		
+		M2StemController ctrller = new M2StemController();
+		ctrller.connect(usrCfg.BleMACaddress);
         
     	byte[] PWMctrlValsCurrent = new byte[CONST.RcPWMchanNum];
     	byte[] PWMctrlValsTarget = new byte[CONST.RcPWMchanNum];
@@ -45,7 +24,7 @@ public class roboticArm {
     	byte u8GPIO_val = 0;
     	int iDanceStepii = 0;
     	boolean bLastStepReturn2Origin = false;
-        while (running) {
+        while (util.isRunning()) {
     	    boolean bTargetReached = true;
     	    for (int ii = 0; ii < CONST.RcPWMchanNum; ii++) {
         		if (PWMctrlValsCurrent[ii] != PWMctrlValsTarget[ii]) {
@@ -67,7 +46,7 @@ public class roboticArm {
 	    	System.out.print("step("+iDanceStepii+")");
     	    switch( iDanceStepii ) {
 	    	    case 0:
-	    	    	delay_ms(1000);
+	    	    	util.delay_ms(1000);
 	    	    	PWMctrlValsTarget[ServoBase] = 0;		PWMctrlValsStepDistance[ServoBase] = 127;
 	    	    	PWMctrlValsTarget[ServoShoulder] = 0;	PWMctrlValsStepDistance[ServoShoulder] = stepSizeJoint;
 	    	    	PWMctrlValsTarget[ServoElbow] = 0;		PWMctrlValsStepDistance[ServoElbow] = stepSizeJoint;
@@ -75,7 +54,7 @@ public class roboticArm {
 	    	    	PWMctrlValsTarget[ServoValve] = -127;		PWMctrlValsStepDistance[ServoValve] = 127;
 	    	    	break;
 	    	    case 1: // touch down
-	    	    	delay_ms(1000);
+	    	    	util.delay_ms(1000);
 	    	    	PWMctrlValsTarget[ServoBase] = 0;		PWMctrlValsStepDistance[ServoBase] = 127;
 	    	    	PWMctrlValsTarget[ServoShoulder] = tochDownPositionShoulderPrepare;	PWMctrlValsStepDistance[ServoShoulder] = 127;
 	    	    	PWMctrlValsTarget[ServoElbow] = tochDownPositionElbowPrepare;		PWMctrlValsStepDistance[ServoElbow] = 127;
@@ -83,7 +62,7 @@ public class roboticArm {
 	    	    	PWMctrlValsTarget[ServoValve] = -127;		PWMctrlValsStepDistance[ServoValve] = 127;
 	    	    	break;
 	    	    case 2: // final touch down
-	    	    	delay_ms(200);
+	    	    	util.delay_ms(200);
 	    	    	PWMctrlValsTarget[ServoBase] = 0;		PWMctrlValsStepDistance[ServoBase] = 127;
 	    	    	PWMctrlValsTarget[ServoShoulder] = tochDownPositionShoulder;	PWMctrlValsStepDistance[ServoShoulder] = stepSizeJoint;
 	    	    	PWMctrlValsTarget[ServoElbow] = tochDownPositionElbow;		PWMctrlValsStepDistance[ServoElbow] = stepSizeJoint;
@@ -91,7 +70,7 @@ public class roboticArm {
 	    	    	PWMctrlValsTarget[ServoValve] = -127;		PWMctrlValsStepDistance[ServoValve] = 127;
 	    	    	break;
 	    	    case 3: // vacuum pump 1sec operation
-	    	    	delay_ms(1000);
+	    	    	util.delay_ms(1000);
 	    	    	PWMctrlValsTarget[ServoBase] = 0;		PWMctrlValsStepDistance[ServoBase] = 127;
 	    	    	PWMctrlValsTarget[ServoShoulder] = tochDownPositionShoulder;	PWMctrlValsStepDistance[ServoShoulder] = stepSizeJoint;
 	    	    	PWMctrlValsTarget[ServoElbow] = tochDownPositionElbow;		PWMctrlValsStepDistance[ServoElbow] = stepSizeJoint;
@@ -99,7 +78,7 @@ public class roboticArm {
 	    	    	PWMctrlValsTarget[ServoValve] = -127;		PWMctrlValsStepDistance[ServoValve] = 127;
 	    	    	break;
 	    	    case 4: // move up slowly
-	    	    	delay_ms(100);
+	    	    	util.delay_ms(100);
 	    	    	PWMctrlValsTarget[ServoBase] = 0;		PWMctrlValsStepDistance[ServoBase] = 127;
 	    	    	PWMctrlValsTarget[ServoShoulder] = tochDownPositionShoulder;	PWMctrlValsStepDistance[ServoShoulder] = 1;
 	    	    	PWMctrlValsTarget[ServoElbow] = (byte)(tochDownPositionElbow-10);		PWMctrlValsStepDistance[ServoElbow] = 1;
@@ -107,7 +86,7 @@ public class roboticArm {
 	    	    	PWMctrlValsTarget[ServoValve] = -127;		PWMctrlValsStepDistance[ServoValve] = 127;
 	    	    	break;
 	    	    case 5: // move up
-	    	    	delay_ms(1000);
+	    	    	util.delay_ms(1000);
 	    	    	PWMctrlValsTarget[ServoBase] = 0;		PWMctrlValsStepDistance[ServoBase] = 127;
 	    	    	PWMctrlValsTarget[ServoShoulder] = -20;	PWMctrlValsStepDistance[ServoShoulder] = 127;
 	    	    	PWMctrlValsTarget[ServoElbow] = 20;		PWMctrlValsStepDistance[ServoElbow] = 127;
@@ -115,7 +94,7 @@ public class roboticArm {
 	    	    	PWMctrlValsTarget[ServoValve] = -127;		PWMctrlValsStepDistance[ServoValve] = 127;
 	    	    	break;
 	    	    case 6: // turn
-	    	    	delay_ms(1000);
+	    	    	util.delay_ms(1000);
 	    	    	PWMctrlValsTarget[ServoBase] = 50;		PWMctrlValsStepDistance[ServoBase] = 127;
 	    	    	PWMctrlValsTarget[ServoShoulder] = -20;	PWMctrlValsStepDistance[ServoShoulder] = 127;
 	    	    	PWMctrlValsTarget[ServoElbow] = 20;		PWMctrlValsStepDistance[ServoElbow] = 127;
@@ -123,7 +102,7 @@ public class roboticArm {
 	    	    	PWMctrlValsTarget[ServoValve] = -127;		PWMctrlValsStepDistance[ServoValve] = 127;
 	    	    	break;
 	    	    case 7: // put it down
-	    	    	delay_ms(1000);
+	    	    	util.delay_ms(1000);
 	    	    	PWMctrlValsTarget[ServoBase] = 50;		PWMctrlValsStepDistance[ServoBase] = 127;
 	    	    	PWMctrlValsTarget[ServoShoulder] = tochDownPositionShoulder;	PWMctrlValsStepDistance[ServoShoulder] = 127;
 	    	    	PWMctrlValsTarget[ServoElbow] = tochDownPositionElbow;		PWMctrlValsStepDistance[ServoElbow] = 127;
@@ -131,7 +110,7 @@ public class roboticArm {
 	    	    	PWMctrlValsTarget[ServoValve] = -127;		PWMctrlValsStepDistance[ServoValve] = 127;
 	    	    	break;
 	    	    case 8: // release
-	    	    	delay_ms(1000);
+	    	    	util.delay_ms(1000);
 	    	    	PWMctrlValsTarget[ServoBase] = 50;		PWMctrlValsStepDistance[ServoBase] = 127;
 	    	    	PWMctrlValsTarget[ServoShoulder] = tochDownPositionShoulder;	PWMctrlValsStepDistance[ServoShoulder] = 127;
 	    	    	PWMctrlValsTarget[ServoElbow] = tochDownPositionElbow;		PWMctrlValsStepDistance[ServoElbow] = 127;
@@ -139,7 +118,7 @@ public class roboticArm {
 	    	    	PWMctrlValsTarget[ServoValve] = 127;		PWMctrlValsStepDistance[ServoValve] = 127;
 	    	    	break;
 	    	    case 9: // make sure release completed
-	    	    	delay_ms(1000);
+	    	    	util.delay_ms(1000);
 	    	    	PWMctrlValsTarget[ServoBase] = 50;		PWMctrlValsStepDistance[ServoBase] = 127;
 	    	    	PWMctrlValsTarget[ServoShoulder] = 0;	PWMctrlValsStepDistance[ServoShoulder] = 127;
 	    	    	PWMctrlValsTarget[ServoElbow] = 0;		PWMctrlValsStepDistance[ServoElbow] = 127;
@@ -147,7 +126,7 @@ public class roboticArm {
 	    	    	PWMctrlValsTarget[ServoValve] = 127;		PWMctrlValsStepDistance[ServoValve] = 127;
 	    	    	break;
 	    	    case 10: // center
-	    	    	delay_ms(1000);
+	    	    	util.delay_ms(1000);
 	    	    	PWMctrlValsTarget[ServoBase] = 0;		PWMctrlValsStepDistance[ServoBase] = 127;
 	    	    	PWMctrlValsTarget[ServoShoulder] = 0;	PWMctrlValsStepDistance[ServoShoulder] = 127;
 	    	    	PWMctrlValsTarget[ServoElbow] = 0;		PWMctrlValsStepDistance[ServoElbow] = 127;
@@ -155,7 +134,7 @@ public class roboticArm {
 	    	    	PWMctrlValsTarget[ServoValve] = -127;		PWMctrlValsStepDistance[ServoValve] = 127;
 	    	    	break;
 	    	    case 11: // touch down
-	    	    	delay_ms(1000);
+	    	    	util.delay_ms(1000);
 	    	    	PWMctrlValsTarget[ServoBase] = 0;		PWMctrlValsStepDistance[ServoBase] = 127;
 	    	    	PWMctrlValsTarget[ServoShoulder] = tochDownPositionShoulderPrepare;	PWMctrlValsStepDistance[ServoShoulder] = 127;
 	    	    	PWMctrlValsTarget[ServoElbow] = tochDownPositionElbowPrepare;		PWMctrlValsStepDistance[ServoElbow] = 127;
@@ -163,7 +142,7 @@ public class roboticArm {
 	    	    	PWMctrlValsTarget[ServoValve] = -127;		PWMctrlValsStepDistance[ServoValve] = 127;
 	    	    	break;
 	    	    case 12: // final touch down
-	    	    	delay_ms(200);
+	    	    	util.delay_ms(200);
 	    	    	PWMctrlValsTarget[ServoBase] = 0;		PWMctrlValsStepDistance[ServoBase] = 127;
 	    	    	PWMctrlValsTarget[ServoShoulder] = tochDownPositionShoulder;	PWMctrlValsStepDistance[ServoShoulder] = stepSizeJoint;
 	    	    	PWMctrlValsTarget[ServoElbow] = tochDownPositionElbow;		PWMctrlValsStepDistance[ServoElbow] = stepSizeJoint;
@@ -171,7 +150,7 @@ public class roboticArm {
 	    	    	PWMctrlValsTarget[ServoValve] = -127;		PWMctrlValsStepDistance[ServoValve] = 127;
 	    	    	break;
 	    	    case 13: // vacuum pump 1sec operation
-	    	    	delay_ms(1000);
+	    	    	util.delay_ms(1000);
 	    	    	PWMctrlValsTarget[ServoBase] = 0;		PWMctrlValsStepDistance[ServoBase] = 127;
 	    	    	PWMctrlValsTarget[ServoShoulder] = tochDownPositionShoulder;	PWMctrlValsStepDistance[ServoShoulder] = stepSizeJoint;
 	    	    	PWMctrlValsTarget[ServoElbow] = tochDownPositionElbow;		PWMctrlValsStepDistance[ServoElbow] = stepSizeJoint;
@@ -179,7 +158,7 @@ public class roboticArm {
 	    	    	PWMctrlValsTarget[ServoValve] = -127;		PWMctrlValsStepDistance[ServoValve] = 127;
 	    	    	break;
 	    	    case 14: // move up slowly
-	    	    	delay_ms(100);
+	    	    	util.delay_ms(100);
 	    	    	PWMctrlValsTarget[ServoBase] = 0;		PWMctrlValsStepDistance[ServoBase] = 127;
 	    	    	PWMctrlValsTarget[ServoShoulder] = tochDownPositionShoulder;	PWMctrlValsStepDistance[ServoShoulder] = 1;
 	    	    	PWMctrlValsTarget[ServoElbow] = (byte)(tochDownPositionElbow-10);		PWMctrlValsStepDistance[ServoElbow] = 1;
@@ -187,7 +166,7 @@ public class roboticArm {
 	    	    	PWMctrlValsTarget[ServoValve] = -127;		PWMctrlValsStepDistance[ServoValve] = 127;
 	    	    	break;
 	    	    case 15: // move up
-	    	    	delay_ms(1000);
+	    	    	util.delay_ms(1000);
 	    	    	PWMctrlValsTarget[ServoBase] = 0;		PWMctrlValsStepDistance[ServoBase] = 127;
 	    	    	PWMctrlValsTarget[ServoShoulder] = -20;	PWMctrlValsStepDistance[ServoShoulder] = 127;
 	    	    	PWMctrlValsTarget[ServoElbow] = 20;		PWMctrlValsStepDistance[ServoElbow] = 127;
@@ -195,7 +174,7 @@ public class roboticArm {
 	    	    	PWMctrlValsTarget[ServoValve] = -127;		PWMctrlValsStepDistance[ServoValve] = 127;
 	    	    	break;
 	    	    case 16: // turn
-	    	    	delay_ms(1000);
+	    	    	util.delay_ms(1000);
 	    	    	PWMctrlValsTarget[ServoBase] = -50;		PWMctrlValsStepDistance[ServoBase] = 127;
 	    	    	PWMctrlValsTarget[ServoShoulder] = -20;	PWMctrlValsStepDistance[ServoShoulder] = 127;
 	    	    	PWMctrlValsTarget[ServoElbow] = 20;		PWMctrlValsStepDistance[ServoElbow] = 127;
@@ -203,7 +182,7 @@ public class roboticArm {
 	    	    	PWMctrlValsTarget[ServoValve] = -127;		PWMctrlValsStepDistance[ServoValve] = 127;
 	    	    	break;
 	    	    case 17: // put it down
-	    	    	delay_ms(1000);
+	    	    	util.delay_ms(1000);
 	    	    	PWMctrlValsTarget[ServoBase] = -50;		PWMctrlValsStepDistance[ServoBase] = 127;
 	    	    	PWMctrlValsTarget[ServoShoulder] = tochDownPositionShoulder;	PWMctrlValsStepDistance[ServoShoulder] = 127;
 	    	    	PWMctrlValsTarget[ServoElbow] = tochDownPositionElbow;		PWMctrlValsStepDistance[ServoElbow] = 127;
@@ -211,7 +190,7 @@ public class roboticArm {
 	    	    	PWMctrlValsTarget[ServoValve] = -127;		PWMctrlValsStepDistance[ServoValve] = 127;
 	    	    	break;
 	    	    case 18: // release
-	    	    	delay_ms(1000);
+	    	    	util.delay_ms(1000);
 	    	    	PWMctrlValsTarget[ServoBase] = -50;		PWMctrlValsStepDistance[ServoBase] = 127;
 	    	    	PWMctrlValsTarget[ServoShoulder] = tochDownPositionShoulder;	PWMctrlValsStepDistance[ServoShoulder] = 127;
 	    	    	PWMctrlValsTarget[ServoElbow] = tochDownPositionElbow;		PWMctrlValsStepDistance[ServoElbow] = 127;
@@ -219,7 +198,7 @@ public class roboticArm {
 	    	    	PWMctrlValsTarget[ServoValve] = 127;		PWMctrlValsStepDistance[ServoValve] = 127;
 	    	    	break;
 	    	    case 19: // make sure release completed
-	    	    	delay_ms(1000);
+	    	    	util.delay_ms(1000);
 	    	    	PWMctrlValsTarget[ServoBase] = -50;		PWMctrlValsStepDistance[ServoBase] = 127;
 	    	    	PWMctrlValsTarget[ServoShoulder] = 0;	PWMctrlValsStepDistance[ServoShoulder] = 127;
 	    	    	PWMctrlValsTarget[ServoElbow] = 0;		PWMctrlValsStepDistance[ServoElbow] = 127;
@@ -227,7 +206,7 @@ public class roboticArm {
 	    	    	PWMctrlValsTarget[ServoValve] = 127;		PWMctrlValsStepDistance[ServoValve] = 127;
 	    	    	break;
     	    	default:
-		    		delay_ms(1000);
+		    		util.delay_ms(1000);
 	    	    	PWMctrlValsTarget[ServoBase] = 0;		PWMctrlValsStepDistance[ServoBase] = 127;
 	    	    	PWMctrlValsTarget[ServoShoulder] = 0;	PWMctrlValsStepDistance[ServoShoulder] = 127;
 	    	    	PWMctrlValsTarget[ServoElbow] = 0;		PWMctrlValsStepDistance[ServoElbow] = 127;
@@ -265,23 +244,12 @@ public class roboticArm {
 	    	}
 	    	System.out.print("\n");
 	    	
-    	    M2StemController.setCtrl(PWMctrlValsCurrent,u8GPIO_val);
-            byte[] ctrlCmd = M2StemController.getBinaryTxCtrlCmd();
-            M2StemController.writeCmd(ctrlCmd);
+	    	ctrller.setCtrl(PWMctrlValsCurrent,u8GPIO_val);
+            byte[] ctrlCmd = ctrller.getBinaryTxCtrlCmd();
+            ctrller.writeCmd(ctrlCmd);
         }
         System.out.print("exit\n");
-        M2StemController.disconnect();
+        ctrller.disconnect();
     }
-    
-    static void delay_ms(int ms) {
-        lock.lock();
-        try {
-        	cv.await(ms, TimeUnit.MILLISECONDS);
-        }
-        catch (Exception e) {
-        }
-        finally {
-            lock.unlock();
-        }
-    }
+
 }
