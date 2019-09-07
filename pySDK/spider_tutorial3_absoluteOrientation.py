@@ -3,7 +3,8 @@
 
 # the spider will make absolute turning angles based on earth magnetic north as true reference
 
-import M2StemController
+from m2controller import m2controller
+from m2controller import m2Const
 import signal
 import time
 import numpy as np
@@ -131,11 +132,11 @@ def sanityCheck():
     return False
     
 bUseCallBack = True #True False, choose to exituse callback or explicit read request for telemetry data retrieval
-#controller = M2StemController.BleCtrller("",callbackfunc)
+#controller = m2controller.BleCtrller("",callbackfunc)
 if bUseCallBack:
-    controller = M2StemController.BleCtrller(usrCfg.BleMACaddress,callbackfunc)
+    controller = m2controller.BleCtrller(usrCfg.BleMACaddress,callbackfunc)
 else:
-    controller = M2StemController.BleCtrller(usrCfg.BleMACaddress,None)
+    controller = m2controller.BleCtrller(usrCfg.BleMACaddress,None)
 controller.connect()
 if sanityCheck():
     print("controller HW setting error")

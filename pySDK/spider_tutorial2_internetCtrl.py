@@ -3,10 +3,10 @@
 
 # the spider walks following command from PC(ble direct connection) or internet(mqtt remote control)
 
-import M2StemController
+from m2controller import m2controller
+from m2controller import m2Const
+from m2controller import ConstSharedAppSdk
 import time
-import CONST
-import ConstSharedAppSdk
 from pynput import keyboard
 import usrCfg
 import signal
@@ -23,7 +23,7 @@ def signal_handler(sig, frame):
     
 signal.signal(signal.SIGINT, signal_handler)
 
-controller = M2StemController.BleCtrller(None)
+controller = m2controller.BleCtrller(None)
 controller.connect()
        
 def stopEverything():

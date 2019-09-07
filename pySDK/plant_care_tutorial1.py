@@ -3,7 +3,8 @@
 
 # the plant is watered at programmable time and amount. Group study of the same plant growth rate is an interesting topic
 
-import M2StemController
+from m2controller import m2controller
+from m2controller import m2Const
 import signal
 import time
 import datetime
@@ -35,11 +36,11 @@ def callbackfunc(telemetry):
     pass
 
 bUseCallBack = False #True False, choose to use callback or explicit read request for telemetry data retrieval
-#controller = M2StemController.BleCtrller("",callbackfunc)
+#controller = m2controller.BleCtrller("",callbackfunc)
 if bUseCallBack:
-    controller = M2StemController.BleCtrller(usrCfg.BleMACaddress,callbackfunc) # 配置使用回调函数
+    controller = m2controller.BleCtrller(usrCfg.BleMACaddress,callbackfunc) # 配置使用回调函数
 else:
-    controller = M2StemController.BleCtrller(usrCfg.BleMACaddress,None)
+    controller = m2controller.BleCtrller(usrCfg.BleMACaddress,None)
     
 controller.connect() # 建立硬件连接
 if sanityCheck():    # 硬件自检，确认配置符合硬件用途

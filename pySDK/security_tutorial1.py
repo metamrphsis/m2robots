@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
-import M2StemController
+from m2controller import m2controller
+from m2controller import m2Const
 import signal
 import time,datetime
-import CONST
 from IPython.utils import _process_win32_controller
 
 requestExit = False
@@ -25,11 +25,11 @@ def callbackfunc(telemetry):
     print("User handler: TouchEvent=%d,Compass=%2.1f(Deg),yaw=%2.1f(Deg)"%(TouchEvent,iCompass_pm180deg,IMUyawDeg))
     
 bUseCallBack = True #True False, choose to use callback or explicit read request for telemetry data retrieval
-#controller = M2StemController.BleCtrller("",callbackfunc)
+#controller = m2controller.BleCtrller("",callbackfunc)
 if bUseCallBack:
-    controller = M2StemController.BleCtrller(callbackfunc)
+    controller = m2controller.BleCtrller(callbackfunc)
 else:
-    controller = M2StemController.BleCtrller(None)
+    controller = m2controller.BleCtrller(None)
 
 controller.connect() # 建立硬件连接
 controller.saveCurrIMUfRPYdeg() # 保存当前门所在角度，作为比较基准

@@ -1,11 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
-import M2StemController
+from m2controller import m2controller
+from m2controller import m2Const
+from m2controller import ConstSharedAppSdk
 import signal
 import time
-import CONST
-import usrCfg
-import ConstSharedAppSdk
 
 requestExit = False
 
@@ -26,10 +25,10 @@ def callbackfunc(telemetry):
     print("User handler: TouchEvent=%d,Compass=%2.1f(Deg),yaw=%2.1f(Deg)"%(TouchEvent,iCompass_pm180deg,IMUyawDeg))
     
 ######################################
-controller = M2StemController.BleCtrller(callbackfunc)
-#controller = M2StemController.BleCtrller(usrCfg.BleMACaddress,callbackfunc)
-#controller = M2StemController.BleCtrller(usrCfg.BleMACaddress)
-#controller = M2StemController.BleCtrller("")
+controller = m2controller.BleCtrller(callbackfunc)
+#controller = m2controller.BleCtrller(usrCfg.BleMACaddress,callbackfunc)
+#controller = m2controller.BleCtrller(usrCfg.BleMACaddress)
+#controller = m2controller.BleCtrller("")
 ######################################
 
 while True:
@@ -40,22 +39,22 @@ while True:
     controller.clearPreviousCmd()
     #controller.send_a_SMS("14086665581", "helloworld")
     #controller.take_a_photo("myphoto.jpg")
-    for ii in range(CONST.USR_GPIO_CNT):
+    for ii in range(m2Const.USR_GPIO_CNT):
         controller.setGPIOn(ii)
-    for ii in range(CONST.RcPWMchanNum):
+    for ii in range(m2Const.RcPWMchanNum):
         controller.setPWM_n_pm1(ii,0.7)
     controller.SendCmdTransBlking()
     
-    if controller.getPlatformType() == CONST.etInternet:
+    if controller.getPlatformType() == m2Const.etInternet:
         Telemetry = controller.getInternetTelemetry()
         if Telemetry is not None:
             print(Telemetry)
             
     controller.requestInternetTelemetry()    
     time.sleep(1)
-    for ii in range(CONST.USR_GPIO_CNT):
+    for ii in range(m2Const.USR_GPIO_CNT):
         controller.resetGPIOn(ii)
-    for ii in range(CONST.RcPWMchanNum):
+    for ii in range(m2Const.RcPWMchanNum):
         controller.setPWM_n_pm1(ii,-0.7)
     controller.SendCmdTransBlking()
     time.sleep(1)

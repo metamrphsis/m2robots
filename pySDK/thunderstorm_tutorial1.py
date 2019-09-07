@@ -3,7 +3,8 @@
 
 # the plane will deploy its payload by activating a servo after it senses a left/left/right/right sequence of roll maneuver
 
-import M2StemController
+from m2controller import m2controller
+from m2controller import m2Const
 import signal
 import time
 bUseCallBack = False #True False, choose to use callback or explicit read request fosetLighteningStepr telemetry data retrieval
@@ -49,7 +50,7 @@ def sanityCheck():
         return True
     return False
     
-controller = M2StemController.BleCtrller(None)
+controller = m2controller.BleCtrller(None)
 controller.connect()
 if sanityCheck():
     print("controller HW setting error")

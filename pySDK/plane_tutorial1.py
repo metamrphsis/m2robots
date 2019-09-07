@@ -3,7 +3,8 @@
 
 # the plane will deploy its payload by activating a servo after it senses a left/left/right/right sequence of roll maneuver
 
-import M2StemController, CONST
+from m2controller import m2controller
+from m2controller import m2Const
 import signal
 import time
 import usrCfg
@@ -36,11 +37,11 @@ def callbackfunc(telemetry):
     print("currently we are in maneuver %s, completed %d step(s), status: %s"%(maneuver,iiCurrStep,CurrStatus))
     
 bUseCallBack = True #True False, choose to use callback or explicit read request for telemetry data retrieval
-#controller = M2StemController.BleCtrller("",callbackfunc)
+#controller = m2controller.BleCtrller("",callbackfunc)
 if bUseCallBack:
-    controller = M2StemController.BleCtrller(usrCfg.BleMACaddress,callbackfunc)
+    controller = m2controller.BleCtrller(usrCfg.BleMACaddress,callbackfunc)
 else:
-    controller = M2StemController.BleCtrller(usrCfg.BleMACaddress,None)
+    controller = m2controller.BleCtrller(usrCfg.BleMACaddress,None)
 
 controller.connect()
 

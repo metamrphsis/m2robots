@@ -4,8 +4,8 @@
 # the spider will make relative turning angles based on its current orientation and left/right turn command
 import signal
 import time
-import CONST
-import M2StemController
+from m2controller import m2controller
+from m2controller import m2Const
 import usrCfg
 
 requestExit = False
@@ -100,7 +100,7 @@ def sanityCheck():
         return True
     return False
     
-controller = M2StemController.BleCtrller(callbackfunc)
+controller = m2controller.BleCtrller(callbackfunc)
     
 controller.connect()
 if sanityCheck():

@@ -5,11 +5,11 @@
 # image captured by mobile phone equipped with external microscopic lens.
 # multiple images stitched by python script.
 
-import M2StemController
+from m2controller import m2controller
+from m2controller import m2Const
 import signal
 import time
 import usrCfg
-import CONST
 import sys
 import datetime
 
@@ -50,8 +50,8 @@ def move2nextSMstate():
 if usrCfg.ctrlType != CONST.etAndroid and usrCfg.ctrlType != CONST.etInternet:
     print("microscope needs phone camera to take sample images for further computer vision processing")
     sys.exit()
-controller = M2StemController.BleCtrller("",callbackfunc)
-#controller = M2StemController.BleCtrller(usrCfg.BleMACaddress,callbackfunc)
+controller = m2controller.BleCtrller("",callbackfunc)
+#controller = m2controller.BleCtrller(usrCfg.BleMACaddress,callbackfunc)
     
 controller.connect()
 if sanityCheck():
