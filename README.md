@@ -117,3 +117,5 @@ Since two PCB versions share the same functionality. The figure below maps the I
 To quickly evaluate the functionality, an android app can be used to interact with the hardware:
 <img src="doc/img/ImgAndroidUI.png" width="600">
 
+download link https://drive.google.com/drive/folders/1T_BxMQ9fzC1eWRE_uwFWa6UqBZzg85Fn?usp=sharing
+
