@@ -3,6 +3,9 @@ It is an actuator and sensor extension hardware for computers with bluetooth ada
 User manual:
 https://docs.google.com/document/d/1PgZ4B7knrJwd1pmbuxnDjpHrCE-opn28DH4dm7CgX7g/edit?usp=sharing
 
+中文版：
+https://docs.google.com/document/d/1YwpXk-FR-y4ukiNmsuH3dIxmI8mh2pJtTJBfqWPEc-0/edit?usp=sharing
+
 ## General-purpose experimental board
 <img src="doc/img/ImgExperimentBoard.png" width="600">
 The hardware control board can be subdivided into:
